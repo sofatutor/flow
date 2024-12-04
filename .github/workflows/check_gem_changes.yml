@@ -2,7 +2,11 @@ name: Check Gem Revision
 
 on:
   workflow_call:
-    secrets: inherit
+    inputs:
+      gem_name:
+        description: 'Name of the gem to check for changes'
+        required: true
+        type: string
 
 jobs:
   check_gem_revision:
@@ -16,8 +20,8 @@ jobs:
 
       - name: Get diff for Gemfile.lock
         run: |
-          TARGET_GEM="SPASS"
-          GEM_REPO_URL="https://github.com/sofatutor/SPASS"
+          TARGET_GEM="${{ inputs.gem_name }}"
+          GEM_REPO_URL="https://github.com/sofatutor/${{ inputs.gem_name }}"
           OLD_REVISION=$(git show origin/master:Gemfile.lock | grep -A 1 "$TARGET_GEM" | grep revision | awk '{print $2}')
           NEW_REVISION=$(grep -A 1 "$TARGET_GEM" Gemfile.lock | grep revision | awk '{print $2}')
           if [ -z "$OLD_REVISION" ] || [ -z "$NEW_REVISION" ] || [ "$OLD_REVISION" = "$NEW_REVISION" ]; then
@@ -38,13 +42,13 @@ jobs:
           CURRENT_BODY=$(gh pr view ${PR_NUMBER} --json body -q '.body')
           # Ensure CURRENT_BODY is not null
           CURRENT_BODY="${CURRENT_BODY:-}"
-          LINK_MARKER="[SPASS Changes]"
+          LINK_MARKER="[${{ inputs.gem_name }} Changes]"
           NEW_LINK="${LINK_MARKER}(${COMPARE_URL})"
           # Check if the link already exists in the body
           case "$CURRENT_BODY" in
             *"$LINK_MARKER"*)
               # Update the existing link
-              UPDATED_BODY=$(echo "$CURRENT_BODY" | sed -E "s#\\[SPASS Changes\\]\\(.*\\)#$NEW_LINK#")
+              UPDATED_BODY=$(echo "$CURRENT_BODY" | sed -E "s#\\[${{ inputs.gem_name }} Changes\\]\\(.*\\)#$NEW_LINK#")
               ;;
             *)
               # Prepend the new link to the body
