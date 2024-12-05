@@ -1,4 +1,5 @@
 require 'optparse'
+require 'open-uri'
 
 module Flow
   class CLI
@@ -25,12 +26,13 @@ module Flow
           opts.banner = "Usage: flow check_gem_revision GEM_NAME MAIN_BRANCH"
           opts.on("-g", "--gem_name GEM_NAME", "Name of the gem") { |v| options[:gem_name] = v }
           opts.on("-m", "--main_branch MAIN_BRANCH", "Main branch name") { |v| options[:main_branch] = v }
+          opts.on("-v", "--verbose", "Show diff instead of URL") { options[:verbose] = true }
         end.parse!(args)
 
         options[:main_branch] ||= 'main'
         puts "Options: #{options.inspect}" if ENV['DEBUG']
-        compare_url = Flow::GemRevisionChecker.call(options[:gem_name], options[:main_branch])
-        puts compare_url if compare_url
+        compare_url = Flow::GemRevisionChecker.call(options[:gem_name], options[:main_branch], options[:verbose])
+        puts compare_url if compare_url && !options[:verbose]
 
       else
         puts "Unknown subcommand: #{subcommand}"
