@@ -1,3 +1,5 @@
+require 'tmpdir'
+
 module Flow
   class GemRevisionChecker
     class << self
