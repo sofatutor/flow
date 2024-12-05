@@ -37,12 +37,19 @@ module Flow
           return nil
         end
 
-        return system("git diff #{old_revision} #{new_revision}") if @verbose
-
-        gem_repo_url = "https://github.com/sofatutor/#{@gem_name}"
-        compare_url = "#{gem_repo_url}/compare/#{old_revision}...#{new_revision}"
-        puts "Compare URL: #{compare_url}" if ENV['DEBUG']
-        compare_url
+        if @verbose
+          Dir.mktmpdir do |dir|
+            system("git clone https://github.com/sofatutor/#{@gem_name}.git #{dir}")
+            Dir.chdir(dir) do
+              system("git diff #{old_revision} #{new_revision}")
+            end
+          end
+        else
+          gem_repo_url = "https://github.com/sofatutor/#{@gem_name}"
+          compare_url = "#{gem_repo_url}/compare/#{old_revision}...#{new_revision}"
+          puts "Compare URL: #{compare_url}" if ENV['DEBUG']
+          compare_url
+        end
       end
     end
   end
