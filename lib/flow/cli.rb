@@ -1,5 +1,4 @@
 require 'optparse'
-require 'open-uri'
 
 module Flow
   class CLI
