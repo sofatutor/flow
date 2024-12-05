@@ -12,13 +12,11 @@ module Flow
 
       def get_revision_from_branch(branch)
         content = `git show origin/#{branch}:Gemfile.lock`
-        puts "Content from branch #{branch}: #{content}" if ENV['DEBUG']
         extract_revision(content)
       end
 
       def get_local_revision
         content = File.read('Gemfile.lock')
-        puts "Local Gemfile.lock content: #{content}" if ENV['DEBUG']
         extract_revision(content)
       end
 
