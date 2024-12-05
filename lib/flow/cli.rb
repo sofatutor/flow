@@ -1,12 +1,10 @@
 require 'optparse'
-require_relative 'update_pr_description'
-require_relative 'check_gem_revision'
 
 module Flow
   class CLI
-    def self.start
+    def self.start(args = ARGV)
       options = {}
-      subcommand = ARGV.shift
+      subcommand = args.shift
 
       case subcommand
       when 'update_pr_description'
@@ -15,7 +13,7 @@ module Flow
           opts.on("-g", "--gem_name GEM_NAME", "Name of the gem") { |v| options[:gem_name] = v }
           opts.on("-c", "--compare_url COMPARE_URL", "Compare URL") { |v| options[:compare_url] = v }
           opts.on("-p", "--pr_number PR_NUMBER", "Pull Request number") { |v| options[:pr_number] = v }
-        end.parse!
+        end.parse!(args)
 
         Flow::PRDescriptionUpdater.call(options[:gem_name], options[:compare_url], options[:pr_number])
 
@@ -24,9 +22,9 @@ module Flow
           opts.banner = "Usage: flow check_gem_revision GEM_NAME MAIN_BRANCH"
           opts.on("-g", "--gem_name GEM_NAME", "Name of the gem") { |v| options[:gem_name] = v }
           opts.on("-m", "--main_branch MAIN_BRANCH", "Main branch name") { |v| options[:main_branch] = v }
-        end.parse!
+        end.parse!(args)
 
-        compare_url = GemRevisionChecker.call(options[:gem_name], options[:main_branch])
+        compare_url = Flow::GemRevisionChecker.call(options[:gem_name], options[:main_branch])
         puts compare_url if compare_url
 
       else
@@ -36,5 +34,3 @@ module Flow
     end
   end
 end
-
-Flow::CLI.start if __FILE__ == $PROGRAM_NAME
