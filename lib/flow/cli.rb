@@ -13,7 +13,7 @@ module Flow
           opts.on("-g", "--gem_name GEM_NAME", "Name of the gem") { |v| options[:gem_name] = v }
           opts.on("-c", "--compare_url COMPARE_URL", "Compare URL") { |v| options[:compare_url] = v }
           opts.on("-p", "--pr_number PR_NUMBER", "Pull Request number") { |v| options[:pr_number] = v }
-        end.parse!(args)
+        end.parse!(args) 
 
         Flow::PRDescriptionUpdater.call(options[:gem_name], options[:compare_url], options[:pr_number])
 
@@ -24,6 +24,7 @@ module Flow
           opts.on("-m", "--main_branch MAIN_BRANCH", "Main branch name") { |v| options[:main_branch] = v }
         end.parse!(args)
 
+        options[:main_branch] ||= 'main'
         compare_url = Flow::GemRevisionChecker.call(options[:gem_name], options[:main_branch])
         puts compare_url if compare_url
 
