@@ -46,15 +46,15 @@ module Flow
             SystemHelper.call("git clone https://github.com/sofatutor/#{@gem_name}.git #{dir} > /dev/null 2>&1")
             Dir.chdir(dir) do
               diff_output = SystemHelper.call("git diff --minimal #{old_revision} #{new_revision}")
-              diff_output.each_line do |line|
+              colored_output = diff_output.each_line.map do |line|
                 if line.start_with?('+')
-                  puts line.green
+                  line.green
                 elsif line.start_with?('-')
-                  puts line.red
+                  line.red
                 else
-                  puts line
+                  line
                 end
-              end
+              end.join
             end
           end
         else
