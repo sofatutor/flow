@@ -23,42 +23,19 @@ jobs:
       - name: Fetch main branch
         run: git fetch --depth=1 origin ${{ inputs.main_branch }}
 
-      - name: Get diff for Gemfile.lock
+      - name: Install Ruby
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: '3.0'
+
+      - name: Run Ruby script to get diff for Gemfile.lock
         run: |
-          TARGET_GEM="${{ inputs.gem_name }}"
-          GEM_REPO_URL="https://github.com/sofatutor/${{ inputs.gem_name }}"
-          OLD_REVISION=$(git show origin/${{ inputs.main_branch }}:Gemfile.lock | grep -A 1 "$TARGET_GEM" | grep revision | awk '{print $2}')
-          NEW_REVISION=$(grep -A 1 "$TARGET_GEM" Gemfile.lock | grep revision | awk '{print $2}')
-          if [ -z "$OLD_REVISION" ] || [ -z "$NEW_REVISION" ] || [ "$OLD_REVISION" = "$NEW_REVISION" ]; then
-            echo "No relevant changes detected."
-            echo "COMPARE_URL=" >> $GITHUB_ENV
-            exit 0
-          fi
-          # Generate the compare URL
-          COMPARE_URL="${GEM_REPO_URL}/compare/${OLD_REVISION}...${NEW_REVISION}"
-          echo "COMPARE_URL=${COMPARE_URL}" >> $GITHUB_ENV
+          ruby lib/check_gem_revision.rb ${{ inputs.gem_name }} ${{ inputs.main_branch }}
+
       - name: Update PR description with GitHub CLI
         if: env.COMPARE_URL != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
-          # Fetch the current PR body
-          CURRENT_BODY=$(gh pr view ${PR_NUMBER} --json body -q '.body')
-          # Ensure CURRENT_BODY is not null
-          CURRENT_BODY="${CURRENT_BODY:-}"
-          LINK_MARKER="[${{ inputs.gem_name }} Changes]"
-          NEW_LINK="${LINK_MARKER}(${COMPARE_URL})"
-          # Check if the link already exists in the body
-          case "$CURRENT_BODY" in
-            *"$LINK_MARKER"*)
-              # Update the existing link
-              UPDATED_BODY=$(echo "$CURRENT_BODY" | sed -E "s#\\[${{ inputs.gem_name }} Changes\\]\\(.*\\)#$NEW_LINK#")
-              ;;
-            *)
-              # Prepend the new link to the body
-              UPDATED_BODY=$(printf "%s\n\n%s" "$NEW_LINK" "$CURRENT_BODY")
-              ;;
-          esac
-          # Update the PR description
-          gh pr edit ${PR_NUMBER} --body "$UPDATED_BODY"
+          ruby lib/update_pr_description.rb ${{ inputs.gem_name }} ${{ env.COMPARE_URL }} ${{ github.event.pull_request.number }}
