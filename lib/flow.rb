@@ -1,5 +1,7 @@
+$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
+
 module Flow
-  require_relative 'flow/cli'
-  require_relative 'flow/pr_description_updater'
-  require_relative 'flow/gem_revision_checker'
+  require 'flow/cli'
+  require 'flow/gem_revision_checker'
+  require 'flow/pr_description_updater'
 end
