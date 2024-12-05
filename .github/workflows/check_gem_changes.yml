@@ -28,14 +28,14 @@ jobs:
         with:
           ruby-version: '3.0'
 
-      - name: Run Ruby script to get diff for Gemfile.lock
+      - name: Check gem revision with CLI
         run: |
-          ruby lib/check_gem_revision.rb ${{ inputs.gem_name }} ${{ inputs.main_branch }}
+          bin/flow check_gem_revision ${{ inputs.gem_name }} ${{ inputs.main_branch }}
 
-      - name: Update PR description with GitHub CLI
+      - name: Update PR description with CLI
         if: env.COMPARE_URL != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          ruby lib/update_pr_description.rb ${{ inputs.gem_name }} ${{ env.COMPARE_URL }} ${{ github.event.pull_request.number }}
+          bin/flow update_pr_description ${{ inputs.gem_name }} ${{ env.COMPARE_URL }} ${{ github.event.pull_request.number }}
