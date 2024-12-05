@@ -9,6 +9,8 @@ class GemRevisionChecker
       compare_revisions
     end
 
+    private
+
     def get_revision_from_branch(branch)
       gemfile_lock = @repo.lookup(@repo.ref("origin/#{branch}").target).tree.path('Gemfile.lock')
       content = gemfile_lock.read_raw.data
@@ -41,5 +43,3 @@ class GemRevisionChecker
     end
   end
 end
-
-GemRevisionChecker.call(ARGV[0], ARGV[1])

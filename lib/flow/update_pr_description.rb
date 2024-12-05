@@ -11,6 +11,8 @@ module Flow
         update_description
       end
 
+      private
+
       def fetch_pr_body
         pr = @client.pull_request(ENV['GITHUB_REPOSITORY'], @pr_number)
         pr[:body] || ""
