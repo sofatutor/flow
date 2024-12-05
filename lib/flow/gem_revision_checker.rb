@@ -1,4 +1,5 @@
 require 'tmpdir'
+require 'colorize'
 require_relative 'system_helper'
 
 module Flow
@@ -44,7 +45,16 @@ module Flow
           Dir.mktmpdir do |dir|
             SystemHelper.call("git clone https://github.com/sofatutor/#{@gem_name}.git #{dir} > /dev/null 2>&1")
             Dir.chdir(dir) do
-              SystemHelper.call("git diff --color=always --minimal #{old_revision} #{new_revision}", use_pty: true)
+              diff_output = SystemHelper.call("git diff --minimal #{old_revision} #{new_revision}")
+              diff_output.each_line do |line|
+                if line.start_with?('+')
+                  puts line.green
+                elsif line.start_with?('-')
+                  puts line.red
+                else
+                  puts line
+                end
+              end
             end
           end
         else
