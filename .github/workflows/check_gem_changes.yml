@@ -29,14 +29,12 @@ jobs:
           ruby-version: '3.0'
 
       - name: Check gem revision with CLI
+        id: check_revision
         run: |
-          COMPARE_URL=$(bin/flow check_gem_revision ${{ inputs.gem_name }} ${{ inputs.main_branch }} | grep 'COMPARE_URL' | cut -d '=' -f 2)
-          echo "COMPARE_URL=$COMPARE_URL" >> $GITHUB_ENV
+          compare_url=$(bin/flow check_gem_revision ${{ inputs.gem_name }} ${{ inputs.main_branch }})
+          echo "compare_url=$compare_url" >> $GITHUB_ENV
 
       - name: Update PR description with CLI
-        if: env.COMPARE_URL != ''
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
+        if: env.compare_url != ''
         run: |
-          bin/flow update_pr_description ${{ inputs.gem_name }} ${{ env.COMPARE_URL }} ${{ github.event.pull_request.number }}
+          bin/flow update_pr_description ${{ inputs.gem_name }} ${{ env.compare_url }} ${{ github.event.pull_request.number }}

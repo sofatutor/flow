@@ -1,19 +1,15 @@
-require 'rugged'
-
 class GemRevisionChecker
   class << self
     def call(gem_name, main_branch)
       @gem_name = gem_name
       @main_branch = main_branch
-      @repo = Rugged::Repository.new('.')
       compare_revisions
     end
 
     private
 
     def get_revision_from_branch(branch)
-      gemfile_lock = @repo.lookup(@repo.ref("origin/#{branch}").target).tree.path('Gemfile.lock')
-      content = gemfile_lock.read_raw.data
+      content = `git show origin/#{branch}:Gemfile.lock`
       extract_revision(content)
     end
 
