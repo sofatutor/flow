@@ -25,7 +25,8 @@ module Flow
 
     desc "check_gem_revision GEM_NAME MAIN_BRANCH", "Check the gem revision and print the compare URL"
     def check_gem_revision(gem_name, main_branch)
-      GemRevisionChecker.call(gem_name, main_branch)
+      compare_url = GemRevisionChecker.call(gem_name, main_branch)
+      puts compare_url if compare_url
     end
   end
 end

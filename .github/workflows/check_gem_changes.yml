@@ -30,7 +30,8 @@ jobs:
 
       - name: Check gem revision with CLI
         run: |
-          bin/flow check_gem_revision ${{ inputs.gem_name }} ${{ inputs.main_branch }}
+          COMPARE_URL=$(bin/flow check_gem_revision ${{ inputs.gem_name }} ${{ inputs.main_branch }} | grep 'COMPARE_URL' | cut -d '=' -f 2)
+          echo "COMPARE_URL=$COMPARE_URL" >> $GITHUB_ENV
 
       - name: Update PR description with CLI
         if: env.COMPARE_URL != ''

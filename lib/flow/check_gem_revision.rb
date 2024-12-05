@@ -32,14 +32,12 @@ class GemRevisionChecker
       new_revision = get_local_revision
 
       if old_revision.nil? || new_revision.nil? || old_revision == new_revision
-        puts "No relevant changes detected."
-        puts "COMPARE_URL="
-        exit 0
+        return nil
       end
 
       gem_repo_url = "https://github.com/sofatutor/#{@gem_name}"
       compare_url = "#{gem_repo_url}/compare/#{old_revision}...#{new_revision}"
-      puts "COMPARE_URL=#{compare_url}"
+      compare_url
     end
   end
 end
