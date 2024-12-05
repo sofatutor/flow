@@ -4,7 +4,7 @@ require_relative 'system_helper'
 module Flow
   class GemRevisionChecker
     class << self
-      def call(gem_name, main_branch, verbose = false)
+      def call(gem_name:, main_branch:, verbose: false)
         @gem_name = gem_name
         @main_branch = main_branch
         @verbose = verbose
@@ -47,7 +47,6 @@ module Flow
               SystemHelper.call("git diff --minimal #{old_revision} #{new_revision}")
             end
           end
-          nil
         else
           gem_repo_url = "https://github.com/sofatutor/#{@gem_name}"
           compare_url = "#{gem_repo_url}/compare/#{old_revision}...#{new_revision}"

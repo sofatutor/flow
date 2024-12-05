@@ -11,10 +11,10 @@ RSpec.describe Flow::CLI do
 
     context 'with gem_changes subcommand' do
       it 'calls GemRevisionChecker with correct arguments' do
-        allow(Flow::GemRevisionChecker).to receive(:call).and_return('compare_url')
-        expect(Flow::GemRevisionChecker).to receive(:call).with('gem_name', 'main', false)
+        allow(Flow::GemRevisionChecker).to receive(:call).and_return('https://github.com/sofatutor/gem_name/compare/old_revision...new_revision')
+        expect(Flow::GemRevisionChecker).to receive(:call).with(gem_name: 'gem_name', main_branch: 'main', verbose: false)
         Flow::CLI.start(['gem_changes', 'gem_name', '-m', 'main'])
-        expect(Flow::GemRevisionChecker).to receive(:call).with('gem_name', 'main', true)
+        expect(Flow::GemRevisionChecker).to receive(:call).with(gem_name: 'gem_name', main_branch: 'main', verbose: true)
         Flow::CLI.start(['gem_changes', 'gem_name', '-m', 'main', '-v'])
       end
     end

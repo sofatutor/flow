@@ -8,7 +8,7 @@ RSpec.describe Flow::GemRevisionChecker do
       allow(Open3).to receive(:capture3).with("git diff --minimal old_revision new_revision").and_return(['', '', double(success?: true)])
       allow(File).to receive(:read).with('Gemfile.lock').and_return("sofatutor/gem_name.git\n  revision: new_revision")
 
-      result = described_class.call('gem_name', 'main', false)
+      result = described_class.call(gem_name: 'gem_name', main_branch: 'main', verbose: false)
 
       expect(result).to eq('https://github.com/sofatutor/gem_name/compare/old_revision...new_revision')
     end
@@ -17,7 +17,7 @@ RSpec.describe Flow::GemRevisionChecker do
       allow(Open3).to receive(:capture3).with("git show origin/main:Gemfile.lock").and_return(["sofatutor/gem_name.git\n  revision: same_revision", '', double(success?: true)])
       allow(File).to receive(:read).with('Gemfile.lock').and_return("sofatutor/gem_name.git\n  revision: same_revision")
 
-      result = described_class.call('gem_name', 'main', false)
+      result = described_class.call(gem_name: 'gem_name', main_branch: 'main', verbose: false)
 
       expect(result).to be_nil
     end

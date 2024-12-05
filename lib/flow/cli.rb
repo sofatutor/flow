@@ -31,7 +31,7 @@ module Flow
         options[:gem_name] = args.shift
         options[:main_branch] ||= `gh pr view --json 'baseRefName' --jq '.baseRefName'`.strip
         puts "Options: #{options.inspect}" if ENV['DEBUG']
-        compare_url = Flow::GemRevisionChecker.call(options[:gem_name], options[:main_branch], options[:verbose])
+        compare_url = Flow::GemRevisionChecker.call(gem_name: options[:gem_name], main_branch: options[:main_branch], verbose: options[:verbose])
         if compare_url
           puts compare_url unless options[:verbose]
         else
