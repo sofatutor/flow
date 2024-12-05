@@ -21,7 +21,7 @@ module Flow
       end
 
       def extract_revision(content)
-        match = content.match(/#{@gem_name}\n.*revision: (\w+)/)
+        match = content.match(/sofatutor\/#{@gem_name}\.git\n.*revision: (\w+)/)
         revision = match ? match[1] : nil
         puts "Extracted revision: #{revision}" if ENV['DEBUG']
         revision
