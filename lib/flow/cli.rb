@@ -21,6 +21,7 @@ module Flow
         Flow::PRDescriptionUpdater.call(options[:gem_name], options[:compare_url], options[:pr_number])
 
       when 'gem_changes'
+        options[:verbose] = false
         OptionParser.new do |opts|
           opts.banner = "Usage: flow gem_changes GEM_NAME MAIN_BRANCH"
           opts.on("-m", "--main_branch MAIN_BRANCH", "Main branch name") { |v| options[:main_branch] = v }
