@@ -1,3 +1,7 @@
 source 'https://rubygems.org'
 
-gemspec
+gem 'rugged'
+gem 'octokit'
+gem 'thor'
+gem 'tty-prompt'
+gem 'faraday-retry'
