@@ -1,4 +1,5 @@
 require 'tmpdir'
+require_relative 'system_helper'
 
 module Flow
   class GemRevisionChecker
@@ -14,7 +15,7 @@ module Flow
       private
 
       def get_revision_from_branch(branch)
-        content = `git show origin/#{branch}:Gemfile.lock`
+        content = SystemHelper.call("git show origin/#{branch}:Gemfile.lock")
         extract_revision(content)
       end
 
@@ -41,11 +42,12 @@ module Flow
 
         if @verbose
           Dir.mktmpdir do |dir|
-            system("git clone https://github.com/sofatutor/#{@gem_name}.git #{dir} > /dev/null 2>&1")
+            SystemHelper.call("git clone https://github.com/sofatutor/#{@gem_name}.git #{dir} > /dev/null 2>&1")
             Dir.chdir(dir) do
-              system("git diff --minimal #{old_revision} #{new_revision}")
+              SystemHelper.call("git diff --minimal #{old_revision} #{new_revision}")
             end
           end
+          nil
         else
           gem_repo_url = "https://github.com/sofatutor/#{@gem_name}"
           compare_url = "#{gem_repo_url}/compare/#{old_revision}...#{new_revision}"
