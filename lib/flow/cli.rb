@@ -32,7 +32,11 @@ module Flow
         options[:main_branch] ||= 'main'
         puts "Options: #{options.inspect}" if ENV['DEBUG']
         compare_url = Flow::GemRevisionChecker.call(options[:gem_name], options[:main_branch], options[:verbose])
-        puts compare_url if compare_url && !options[:verbose]
+        if compare_url
+          puts compare_url unless options[:verbose]
+        else
+          exit 1
+        end
 
       else
         puts "Unknown subcommand: #{subcommand}"

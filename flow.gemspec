@@ -12,4 +12,3 @@ Gem::Specification.new do |spec|
   spec.files         = Dir["lib/**/*"]
   spec.executables   = ["flow"]
   spec.require_paths = ["lib"]
-end
