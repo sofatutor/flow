@@ -43,7 +43,11 @@ module Flow
 
         if @verbose
           Dir.mktmpdir do |dir|
-            clone_command = "git clone https://github.com/sofatutor/#{@gem_name}.git #{dir} > /dev/null"
+            clone_command = if ENV['GITHUB_AUTH']
+                              "git clone https://#{ENV['GITHUB_AUTH']}@github.com/sofatutor/#{@gem_name}.git #{dir} > /dev/null"
+                            else
+                              "git clone https://github.com/sofatutor/#{@gem_name}.git #{dir} > /dev/null"
+                            end
             SystemHelper.call(clone_command)
             Dir.chdir(dir) do
               result = SystemHelper.call("git diff --minimal #{old_revision} #{new_revision}")

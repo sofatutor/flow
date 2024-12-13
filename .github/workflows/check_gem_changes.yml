@@ -32,9 +32,8 @@ jobs:
         run: gem install specific_install && gem specific_install -l https://github.com/sofatutor/flow.git -b use-ruby-and-add-cli
 
       - name: Check gem revision with CLI and update PR description
+          GITHUB_AUTH: sofatutor-gems:${{ secrets.SOFATUTOR_GITHUB_TOKEN }}
         run: |
-          echo "https://sofatutor-gems:${{ secrets.SOFATUTOR_GITHUB_TOKEN }}@github.com" >> /tmp/gitcredfile
-          git config --global credential.helper "store --file=/tmp/gitcredfile"
           diff=$(flow check_gem_revision -m ${{ inputs.main_branch }} ${{ inputs.gem_name }} --verbose)
           compare_url=$(flow check_gem_revision -m ${{ inputs.main_branch }} ${{ inputs.gem_name }})
           compare_content="\`\`\`diff\n$diff\n\`\`\`\n\n$compare_url"
