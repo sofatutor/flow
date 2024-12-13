@@ -33,9 +33,8 @@ jobs:
 
       - name: Check gem revision with CLI and update PR description
         env:
-          GITHUB_TOKEN: sofatutor-gems:${{ secrets.SOFATUTOR_GITHUB_TOKEN }}
+          GITHUB_AUTH: sofatutor-gems:${{ secrets.SOFATUTOR_GITHUB_TOKEN }}
         run: |
-          env
           diff=$(flow check_gem_revision -m ${{ inputs.main_branch }} ${{ inputs.gem_name }} --verbose)
           compare_url=$(flow check_gem_revision -m ${{ inputs.main_branch }} ${{ inputs.gem_name }})
           compare_content="\`\`\`diff\n$diff\n\`\`\`\n\n$compare_url"
