@@ -37,5 +37,5 @@ jobs:
         run: |
           diff=$(flow check_gem_revision -m ${{ inputs.main_branch }} ${{ inputs.gem_name }} --verbose)
           compare_url=$(flow check_gem_revision -m ${{ inputs.main_branch }} ${{ inputs.gem_name }})
-          compare_content="\`\`\`diff\n$diff\n\`\`\`\n\n$compare_url"
+          compare_content="[${{ inputs.gem_name }} changes]($compare_url)\\n\`\`\`diff\\n$diff\\n\`\`\`\\n\\n"
           flow update_pr_description -c "$compare_content" -p ${{ github.event.pull_request.number }} ${{ inputs.gem_name }}
