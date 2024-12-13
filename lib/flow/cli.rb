@@ -11,14 +11,15 @@ module Flow
       case subcommand
       when 'update_pr_description'
         OptionParser.new do |opts|
-          opts.banner = "Usage: flow update_pr_description -l DIFF_LINK [-t DIFF_TEXT] GEM_NAME"
+          opts.banner = "Usage: flow update_pr_description -l DIFF_LINK [-t DIFF_TEXT] -p PR_NUMBER GEM_NAME"
           opts.on("-l", "--diff_link DIFF_LINK", "Link to the diff") { |v| options[:diff_link] = v }
           opts.on("-t", "--diff_text DIFF_TEXT", "Text of the diff") { |v| options[:diff_text] = v }
+          opts.on("-p", "--pr_number PR_NUMBER", "Pull Request number") { |v| options[:pr_number] = v }
         end.parse!(args)
 
         options[:gem_name] = args.shift
         puts "Options: #{options.inspect}" if ENV['DEBUG']
-        Flow::PRDescriptionUpdater.call(gem_name: options[:gem_name], diff_link: options[:diff_link], diff_text: options[:diff_text])
+        Flow::PRDescriptionUpdater.call(gem_name: options[:gem_name], diff_link: options[:diff_link], pr_number: options[:pr_number], diff_text: options[:diff_text])
 
       when 'check_gem_revision'
         options[:verbose] = false

@@ -3,10 +3,11 @@ require_relative 'system_helper'
 module Flow
   class PRDescriptionUpdater
     class << self
-      def call(gem_name:, diff_link:, diff_text: nil)
+      def call(gem_name:, pr_number:, diff_link:, diff_text: nil)
         @gem_name = gem_name
         @diff_link = diff_link
         @diff_text = diff_text
+        @pr_number = pr_number
         update_description
       end
 
