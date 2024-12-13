@@ -3,10 +3,10 @@ require_relative 'system_helper'
 module Flow
   class PRDescriptionUpdater
     class << self
-      def call(gem_name, content, pr_number)
+      def call(gem_name:, diff_link:, diff_text: nil)
         @gem_name = gem_name
-        @content = content
-        @pr_number = pr_number
+        @diff_link = diff_link
+        @diff_text = diff_text
         update_description
       end
 
@@ -23,15 +23,10 @@ module Flow
 
       def update_description
         current_body = fetch_pr_body
-        marker = "[#{@gem_name} Changes]"
-        new_content = "#{marker}\n\n#{@content}"
-
-        updated_body = if current_body.include?(marker)
-                         current_body.gsub(/#{marker}\n\n.*(?=\n\n|$)/m, new_content)
-                       else
-                         "#{new_content}\n\n#{current_body}"
-                       end
-
+        marker = "flow:#{@gem_name}_changes"
+        new_content = "#{marker}\n\n[#{@gem_name} changes](#{@diff_link})"
+        new_content += "\n\`\`\`\n#{@diff_text}\n\`\`\`" if @diff_text
+        updated_body = current_body.sub(/#{marker}.*\n/m, new_content)
         update_pr_body(updated_body)
       end
     end
