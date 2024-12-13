@@ -48,7 +48,7 @@ module Flow
             Dir.chdir(dir) do
               diff_cmd = "git diff --minimal #{old_revision} #{new_revision}"
               if @format == 'html'
-                diff_output = SystemHelper.call("#{diff_cmd} | ansi2html")
+                diff_output = SystemHelper.call(diff_cmd, 'ansi2html')
               else
                 diff_output = SystemHelper.call(diff_cmd)
               end
