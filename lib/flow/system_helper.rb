@@ -4,6 +4,7 @@ require 'pty'
 module SystemHelper
   def self.call(command)
     output = ''
+    error_output = ''
     status = nil
     Open3.popen2e(command) do |stdin, stdout_err, wait_thr|
       while line = stdout_err.gets
@@ -11,7 +12,10 @@ module SystemHelper
       end
 
       status = wait_thr.value
-      raise "Command failed: #{command}" unless status == 0
+      if status != 0
+        error_output = output
+        raise "Command failed: #{command}\nError output: #{error_output}"
+      end
     end
 
     output
