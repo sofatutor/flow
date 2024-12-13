@@ -36,11 +36,11 @@ module Flow
       def update_description(pr_number)
         current_body = fetch_pr_body(pr_number)
         placeholder_pattern = /flow:#{@gem_name}_changes/
-        block_pattern = /## #{@gem_name} Changes.*?---\n/m
+        block_pattern = /## \[#{@gem_name} Changes\].*?---\n/m
 
         truncated = truncate_diff(@diff_text)
 
-        new_block = "## #{@gem_name} Changes\n\n[#{@gem_name} changes](#{@diff_link})"
+        new_block = "## [#{@gem_name} Changes](#{@diff_link})"
         new_block += "\n\n```diff\n#{truncated}\n```\n" if truncated
         new_block += "\n---\n"
 
