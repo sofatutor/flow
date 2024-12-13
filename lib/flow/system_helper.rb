@@ -18,7 +18,6 @@ module SystemHelper
       status = nil
       Open3.popen2e(command) do |stdin, stdout_err, wait_thr|
         while line = stdout_err.gets
-          puts line
           output << line
         end
 
