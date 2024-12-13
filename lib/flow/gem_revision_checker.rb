@@ -1,14 +1,16 @@
 require 'tmpdir'
 require 'colorize'
+require 'ansi2html'
 require_relative 'system_helper'
 
 module Flow
   class GemRevisionChecker
     class << self
-      def call(gem_name:, main_branch:, verbose: false)
+      def call(gem_name:, main_branch:, verbose: false, format: nil)
         @gem_name = gem_name
         @main_branch = main_branch
         @verbose = verbose
+        @format = format
         puts "Checking revisions for gem: #{@gem_name} on branch: #{@main_branch}" if ENV['DEBUG']
         compare_revisions
       end
@@ -46,15 +48,8 @@ module Flow
             SystemHelper.call("git clone https://github.com/sofatutor/#{@gem_name}.git #{dir} > /dev/null 2>&1")
             Dir.chdir(dir) do
               diff_output = SystemHelper.call("git diff --minimal #{old_revision} #{new_revision}")
-              colored_output = diff_output.each_line.map do |line|
-                if line.start_with?('+')
-                  line.green
-                elsif line.start_with?('-')
-                  line.red
-                else
-                  line
-                end
-              end.join
+              formatted_output = format_diff_output(diff_output)
+              puts formatted_output
             end
           end
         else
@@ -62,6 +57,15 @@ module Flow
           compare_url = "#{gem_repo_url}/compare/#{old_revision}...#{new_revision}"
           puts "Compare URL: #{compare_url}" if ENV['DEBUG']
           compare_url
+        end
+      end
+
+      def format_diff_output(diff_output)
+        if @format == 'html'
+          converter = Ansi2html::convert(diff_output)
+          converter.html
+        else
+          diff_output
         end
       end
     end

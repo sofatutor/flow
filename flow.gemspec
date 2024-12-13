@@ -12,6 +12,5 @@ Gem::Specification.new do |spec|
   spec.files         = Dir["lib/**/*"]
   spec.executables   = ["flow"]
   spec.require_paths = ["lib"]
-
-  spec.add_runtime_dependency "colorize"
+  spec.add_runtime_dependency "ansi2html"
 end
