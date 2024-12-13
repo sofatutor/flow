@@ -25,9 +25,18 @@ module Flow
       def update_description
         current_body = fetch_pr_body
         marker = "flow:#{@gem_name}_changes"
-        new_content = "#{marker}\n\n[#{@gem_name} changes](#{@diff_link})"
-        new_content += "\n\`\`\`\n#{@diff_text}\n\`\`\`\n" if @diff_text
-        updated_body = current_body.sub(/#{marker}\n/m, new_content)
+        pattern = /#{marker}.*?---\n/m
+
+        new_content = "#{marker}\n\n## #{@gem_name} Changes\n\n[#{@gem_name} changes](#{@diff_link})"
+        new_content += "\n\n```diff\n#{@diff_text}\n```\n" if @diff_text
+        new_content += "\n---\n"
+
+        updated_body = if current_body.match?(pattern)
+                         current_body.gsub(pattern, new_content)
+                       else
+                         "#{current_body}\n\n#{new_content}"
+                       end
+
         update_pr_body(updated_body)
       end
     end
