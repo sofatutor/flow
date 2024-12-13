@@ -26,8 +26,8 @@ module Flow
         current_body = fetch_pr_body
         marker = "flow:#{@gem_name}_changes"
         new_content = "#{marker}\n\n[#{@gem_name} changes](#{@diff_link})"
-        new_content += "\n\`\`\`\n#{@diff_text}\n\`\`\`" if @diff_text
-        updated_body = current_body.sub(/#{marker}.*\n/m, new_content)
+        new_content += "\n\`\`\`\n#{@diff_text}\n\`\`\`\n" if @diff_text
+        updated_body = current_body.sub(/#{marker}\n/m, new_content)
         update_pr_body(updated_body)
       end
     end
