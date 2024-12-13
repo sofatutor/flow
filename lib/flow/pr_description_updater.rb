@@ -27,15 +27,21 @@ module Flow
         marker = "flow:#{@gem_name}_changes"
         pattern = /#{marker}.*?---\n/m
 
+        # Build new content section
         new_content = "#{marker}\n\n## #{@gem_name} Changes\n\n[#{@gem_name} changes](#{@diff_link})"
         new_content += "\n\n```diff\n#{@diff_text}\n```\n" if @diff_text
         new_content += "\n---\n"
 
-        updated_body = if current_body.match?(pattern)
-                         current_body.gsub(pattern, new_content)
-                       else
-                         "#{current_body}\n\n#{new_content}"
-                       end
+        # If the marker and section already exist, replace them; otherwise, replace placeholder or append
+        if current_body.match?(pattern)
+          updated_body = current_body.gsub(pattern, new_content)
+        elsif current_body.include?("flow:#{@gem_name}_changes")
+          # If the marker is there but hasn't been replaced before
+          updated_body = current_body.sub("flow:#{@gem_name}_changes", new_content)
+        else
+          # If marker not found at all, just append at the end
+          updated_body = "#{current_body}\n\n#{new_content}"
+        end
 
         update_pr_body(updated_body)
       end
