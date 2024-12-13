@@ -1,6 +1,5 @@
 require 'tmpdir'
 require 'colorize'
-require 'ansi2html'
 require_relative 'system_helper'
 
 module Flow
@@ -47,9 +46,13 @@ module Flow
           Dir.mktmpdir do |dir|
             SystemHelper.call("git clone https://github.com/sofatutor/#{@gem_name}.git #{dir} > /dev/null 2>&1")
             Dir.chdir(dir) do
-              diff_output = SystemHelper.call("git diff --minimal #{old_revision} #{new_revision}")
-              formatted_output = format_diff_output(diff_output)
-              puts formatted_output
+              diff_cmd = "git diff --minimal #{old_revision} #{new_revision}"
+              if @format == 'html'
+                diff_output = SystemHelper.call("#{diff_cmd} | ansi2html")
+              else
+                diff_output = SystemHelper.call(diff_cmd)
+              end
+              puts diff_output
             end
           end
         else
@@ -57,15 +60,6 @@ module Flow
           compare_url = "#{gem_repo_url}/compare/#{old_revision}...#{new_revision}"
           puts "Compare URL: #{compare_url}" if ENV['DEBUG']
           compare_url
-        end
-      end
-
-      def format_diff_output(diff_output)
-        if @format == 'html'
-          converter = Ansi2html::convert(diff_output)
-          converter.html
-        else
-          diff_output
         end
       end
     end
