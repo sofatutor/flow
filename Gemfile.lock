@@ -2,12 +2,10 @@ PATH
   remote: .
   specs:
     flow (0.1.0)
-      ansi2html
 
 GEM
   remote: https://rubygems.org/
   specs:
-    ansi2html (5.3.4)
     diff-lcs (1.5.1)
     rspec (3.13.0)
       rspec-core (~> 3.13.0)

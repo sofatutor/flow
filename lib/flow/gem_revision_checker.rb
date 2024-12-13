@@ -45,7 +45,8 @@ module Flow
           Dir.mktmpdir do |dir|
             SystemHelper.call("git clone https://github.com/sofatutor/#{@gem_name}.git #{dir} > /dev/null 2>&1")
             Dir.chdir(dir) do
-              SystemHelper.call("git diff --minimal #{old_revision} #{new_revision}", pty: true)
+              result = SystemHelper.call("git diff --minimal #{old_revision} #{new_revision}")
+              puts result
             end
           end
         else
