@@ -33,7 +33,6 @@ jobs:
 
       - name: Check gem revision with CLI and update PR description
         run: |
-          diff=$(flow check_gem_revision ${{ inputs.gem_name }} ${{ inputs.main_branch }} --verbose)
-          flow update_pr_description ${{ inputs.gem_name }} "\`\`\`diff\n$diff\n\`\`\`" ${{ github.event.pull_request.number }}
-          compare_url=$(flow check_gem_revision ${{ inputs.gem_name }} ${{ inputs.main_branch }})
-          flow update_pr_description ${{ inputs.gem_name }} $compare_url ${{ github.event.pull_request.number }}
+          diff=$(flow gem_changes ${{ inputs.gem_name }} ${{ inputs.main_branch }} --verbose)
+          combined_message="\`\`\`diff\n$diff\n\`\`\`"
+          flow update_pr_description ${{ inputs.gem_name }} "$combined_message" ${{ github.event.pull_request.number }}

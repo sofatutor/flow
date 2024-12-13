@@ -11,20 +11,20 @@ module Flow
       case subcommand
       when 'update_pr_description'
         OptionParser.new do |opts|
-          opts.banner = "Usage: flow update_pr_description GEM_NAME COMPARE_URL PR_NUMBER"
-          opts.on("-c", "--compare_url COMPARE_URL", "Compare URL") { |v| options[:compare_url] = v }
+          opts.banner = "Usage: flow update_pr_description GEM_NAME CONTENT PR_NUMBER"
+          opts.on("-c", "--content CONTENT", "Content to update") { |v| options[:content] = v }
           opts.on("-p", "--pr_number PR_NUMBER", "Pull Request number") { |v| options[:pr_number] = v }
         end.parse!(args)
 
         options[:gem_name] = args.shift
         puts "Options: #{options.inspect}" if ENV['DEBUG']
-        Flow::PRDescriptionUpdater.call(options[:gem_name], options[:compare_url], options[:pr_number])
+        Flow::PRDescriptionUpdater.call(options[:gem_name], options[:content], options[:pr_number])
 
-      when 'gem_changes'
+      when 'check_gem_revision'
         options[:verbose] = false
         options[:format] = 'cli'
         OptionParser.new do |opts|
-          opts.banner = "Usage: flow gem_changes GEM_NAME MAIN_BRANCH"
+          opts.banner = "Usage: flow check_gem_revision GEM_NAME MAIN_BRANCH"
           opts.on("-m", "--main_branch MAIN_BRANCH", "Main branch name") { |v| options[:main_branch] = v }
           opts.on("-v", "--verbose", "Show diff instead of URL") { options[:verbose] = true }
         end.parse!(args)
@@ -41,7 +41,7 @@ module Flow
 
       else
         puts "Unknown subcommand: #{subcommand}"
-        puts "Available subcommands: update_pr_description, gem_changes"
+        puts "Available subcommands: update_pr_description, check_gem_revision"
       end
     end
   end
