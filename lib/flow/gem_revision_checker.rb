@@ -15,13 +15,22 @@ module Flow
 
       private
 
+      def extract_github_auth(content)
+        match = content.match(/sofatutor-gems:(\w+)@github.com/)
+        auth_token = match ? match[1] : nil
+        puts "Extracted GitHub auth token: #{auth_token}" if ENV['DEBUG']
+        auth_token
+      end
+
       def get_revision_from_branch(branch)
         content = SystemHelper.call("git show origin/#{branch}:Gemfile.lock")
+        @github_auth = extract_github_auth(content)
         extract_revision(content)
       end
 
       def get_local_revision
         content = File.read('Gemfile.lock')
+        @github_auth = extract_github_auth(content)
         extract_revision(content)
       end
 
@@ -43,11 +52,7 @@ module Flow
 
         if @verbose
           Dir.mktmpdir do |dir|
-            clone_command = if ENV['GITHUB_AUTH']
-                              "git clone https://#{ENV['GITHUB_AUTH']}@github.com/sofatutor/#{@gem_name}.git #{dir} > /dev/null"
-                            else
-                              "git clone https://github.com/sofatutor/#{@gem_name}.git #{dir} > /dev/null"
-                            end
+            clone_command = "git clone https://sofatutor-gems:#{@github_auth}@github.com/sofatutor/#{@gem_name}.git #{dir} > /dev/null"
             SystemHelper.call(clone_command)
             Dir.chdir(dir) do
               result = SystemHelper.call("git diff --minimal #{old_revision} #{new_revision}")
@@ -55,7 +60,7 @@ module Flow
             end
           end
         else
-          gem_repo_url = "https://github.com/sofatutor/#{@gem_name}"
+          gem_repo_url = "https://sofatutor-gems:#{@github_auth}@github.com/sofatutor/#{@gem_name}"
           compare_url = "#{gem_repo_url}/compare/#{old_revision}...#{new_revision}"
           puts "Compare URL: #{compare_url}" if ENV['DEBUG']
           compare_url
