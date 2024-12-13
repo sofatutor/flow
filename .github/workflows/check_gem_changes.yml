@@ -37,7 +37,9 @@ jobs:
           ruby-version: '3.1'
 
       - name: Install dependencies
-        run: bundle install --path vendor/bundle
+        run: |
+          bundle config set --local path 'vendor/bundle'
+          bundle install
 
       - name: Check gem revision with CLI and update PR description
         run: |
