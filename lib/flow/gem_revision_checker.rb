@@ -48,6 +48,7 @@ module Flow
             Dir.chdir(dir) do
               diff_cmd = "git diff --minimal #{old_revision} #{new_revision}"
               if @format == 'html'
+                SystemHelper.call('gem install ansi2html') unless `gem list ansi2html -i`.strip == 'true'
                 diff_output = SystemHelper.call(diff_cmd, 'ansi2html')
               else
                 diff_output = SystemHelper.call(diff_cmd)
