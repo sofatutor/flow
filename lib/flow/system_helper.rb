@@ -33,7 +33,7 @@ module SystemHelper
 
       PTY.spawn(command) do |stdout, stdin, pid|
         begin
-          stdout.each_char { |c| print c; output << c }
+          stdout.each_char { |c| output << c }
         rescue Errno::EIO
           # End of output
         end
