@@ -28,6 +28,7 @@ module Flow
         diff_lines = diff.split("\n")
         if diff_lines.size > MAX_DIFF_LINES
           diff_lines = diff_lines.first(MAX_DIFF_LINES)
+          diff_lines << "______"
           diff_lines << "For full changes, please see the link above."
         end
         diff_lines.join("\n")
