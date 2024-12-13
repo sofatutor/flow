@@ -11,7 +11,7 @@ module Flow
       case subcommand
       when 'update_pr_description'
         OptionParser.new do |opts|
-          opts.banner = "Usage: flow update_pr_description GEM_NAME CONTENT PR_NUMBER"
+          opts.banner = "Usage: flow update_pr_description -c CONTENT -p PR_NUMBER GEM_NAME"
           opts.on("-c", "--content CONTENT", "Content to update") { |v| options[:content] = v }
           opts.on("-p", "--pr_number PR_NUMBER", "Pull Request number") { |v| options[:pr_number] = v }
         end.parse!(args)
@@ -24,7 +24,7 @@ module Flow
         options[:verbose] = false
         options[:format] = 'cli'
         OptionParser.new do |opts|
-          opts.banner = "Usage: flow check_gem_revision GEM_NAME MAIN_BRANCH"
+          opts.banner = "Usage: flow check_gem_revision -m MAIN_BRANCH GEM_NAME"
           opts.on("-m", "--main_branch MAIN_BRANCH", "Main branch name") { |v| options[:main_branch] = v }
           opts.on("-v", "--verbose", "Show diff instead of URL") { options[:verbose] = true }
         end.parse!(args)
