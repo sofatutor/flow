@@ -55,8 +55,9 @@ module Flow
             clone_command = "git clone https://sofatutor-gems:#{@github_auth}@github.com/sofatutor/#{@gem_name}.git #{dir} > /dev/null"
             SystemHelper.call(clone_command)
             Dir.chdir(dir) do
-              result = SystemHelper.call("git diff --minimal #{old_revision} #{new_revision}")
-              puts result
+              SystemHelper.call("git diff --minimal #{old_revision} #{new_revision}")
+              puts "Diff:\n#{result}" if ENV['DEBUG']
+              result
             end
           end
         else
