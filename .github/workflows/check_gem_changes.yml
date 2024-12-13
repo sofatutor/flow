@@ -24,9 +24,9 @@ jobs:
         run: git fetch --depth=1 origin ${{ inputs.main_branch }}
 
       - name: Install Ruby
-        uses: actions/setup-ruby@v1
+        uses: sofatutor/setup-ruby@master
         with:
-          ruby-version: '3.0'
+          ruby-version: '3.1'
 
       - name: Check gem revision with CLI and update PR description
         run: |
