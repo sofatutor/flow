@@ -35,21 +35,24 @@ module Flow
 
       def update_description(pr_number)
         current_body = fetch_pr_body(pr_number)
-        marker = "flow:#{@gem_name}_changes"
-        pattern = /#{marker}.*?---\n/m
+        placeholder_pattern = /flow:#{@gem_name}_changes/
+        block_pattern = /## #{@gem_name} Changes.*?---\n/m
 
         truncated = truncate_diff(@diff_text)
 
-        new_content = "#{marker}\n\n## #{@gem_name} Changes\n\n[#{@gem_name} changes](#{@diff_link})"
-        new_content += "\n\n```diff\n#{truncated}\n```\n" if truncated
-        new_content += "\n---\n"
+        new_block = "## #{@gem_name} Changes\n\n[#{@gem_name} changes](#{@diff_link})"
+        new_block += "\n\n```diff\n#{truncated}\n```\n" if truncated
+        new_block += "\n---\n"
 
-        if current_body.match?(pattern)
-          updated_body = current_body.gsub(pattern, new_content)
-        elsif current_body.include?(marker)
-          updated_body = current_body.sub(marker, new_content)
+        if current_body.match?(placeholder_pattern)
+          # First run: Replace placeholder with the new block (no marker in the block)
+          updated_body = current_body.sub(placeholder_pattern, new_block)
+        elsif current_body.match?(block_pattern)
+          # Subsequent runs: Replace existing block using its heading as the anchor
+          updated_body = current_body.gsub(block_pattern, new_block)
         else
-          updated_body = "#{current_body}\n\n#{new_content}"
+          # No placeholder or block found: Append the block at the end
+          updated_body = "#{current_body}\n\n#{new_block}"
         end
 
         update_pr_body(pr_number, updated_body)
