@@ -23,27 +23,17 @@ jobs:
       - name: Fetch main branch
         run: git fetch --depth=1 origin ${{ inputs.main_branch }}
 
-      - name: Set up cache for bundler
-        uses: actions/cache@v3
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-bundler-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-bundler-
-
       - name: Install Ruby
         uses: sofatutor/setup-ruby@master
         with:
           ruby-version: '3.1'
 
-      - name: Install dependencies
-        run: |
-          bundle config set --local path 'vendor/bundle'
-          bundle install
+      - name: Install flow gem from git
+        run: gem install specific_install && gem specific_install -l https://github.com/sofatutor/flow.git -b use-ruby-and-add-cli
 
       - name: Check gem revision with CLI and update PR description
         run: |
-          diff=$(bin/flow check_gem_revision ${{ inputs.gem_name }} ${{ inputs.main_branch }} --verbose)
+          diff=$(flow check_gem_revision ${{ inputs.gem_name }} ${{ inputs.main_branch }} --verbose)
           bin/flow update_pr_description ${{ inputs.gem_name }} "\`\`\`diff\n$diff\n\`\`\`" ${{ github.event.pull_request.number }}
-          compare_url=$(bin/flow check_gem_revision ${{ inputs.gem_name }} ${{ inputs.main_branch }})
+          compare_url=$(flow check_gem_revision ${{ inputs.gem_name }} ${{ inputs.main_branch }})
           bin/flow update_pr_description ${{ inputs.gem_name }} $compare_url ${{ github.event.pull_request.number }}
