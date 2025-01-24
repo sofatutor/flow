@@ -1,0 +1,32 @@
+name: 'Gem Dependency Updater'
+description: 'Updates the Gemfile and Gemfile.lock in a dependent project'
+inputs:
+  gem_name:
+    description: 'Name of the gem to update'
+    required: true
+  repo:
+    description: 'Repository to update'
+    required: true
+  token:
+    description: 'GitHub Personal Access Token'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: sofatutor/setup-ruby@master
+      with:
+        ruby-version: '3.2'
+
+    - name: Checkout Dependent Repository
+      uses: actions/checkout@v4
+      with:
+        repository: ${{ inputs.repo }}
+        token: ${{ inputs.token }}
+
+    - name: Run GemDependencyUpdater Ruby Script
+      shell: bash
+      run: |
+        ruby ${{ github.action_path }}/scripts/gem_dependency_updater.rb ${{ github.ref_name }} ${{ inputs.gem_name }}
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
