@@ -35,7 +35,7 @@ class GemDependencyUpdater
         || git checkout -b #{@branch_name}
     CMD
     execute_command(checkout_cmd, "Failed to checkout or create branch '#{@branch_name}'.")
-    execute_command("git pull", "Failed to pull latest changes for branch '#{@branch_name}'.")
+    execute_command("git pull", "Failed to pull latest changes for branch '#{@branch_name}'.", graceful: true)
   end
 
   def update_gem_dependency
