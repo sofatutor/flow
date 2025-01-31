@@ -14,16 +14,16 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - uses: sofatutor/setup-ruby@master
-      with:
-        ruby-version: '3.2'
-        bundler-cache: true
-
     - name: Checkout Dependent Repository
       uses: actions/checkout@v4
       with:
         repository: ${{ inputs.repo }}
         token: ${{ inputs.token }}
+
+    - uses: sofatutor/setup-ruby@master
+      with:
+        ruby-version: '3.2'
+        bundler-cache: true
 
     - name: Run GemDependencyUpdater Ruby Script
       shell: bash
