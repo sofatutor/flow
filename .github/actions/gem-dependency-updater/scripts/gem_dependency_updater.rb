@@ -39,6 +39,7 @@ class GemDependencyUpdater
   end
 
   def update_gem_dependency
+    execute_command("bundle config set --local frozen false", "Failed to set bundle config.")
     gemfile = File.read(GEMFILE_PATH)
     new_gemfile = gemfile.gsub(/^gem '#{Regexp.escape(@gem_name)}',.*/) do
       "gem '#{@gem_name}', sofatutor: '#{@gem_name}', branch: '#{@branch_name}'"
