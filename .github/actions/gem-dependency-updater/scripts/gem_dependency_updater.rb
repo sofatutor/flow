@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
 
+require 'json'
+
 class GemDependencyUpdater
   USAGE_MESSAGE = "Usage: #{$0} <branch_name> <gem_name>"
   GIT_USER_NAME = 'sofatutor-bot'
@@ -8,8 +10,17 @@ class GemDependencyUpdater
   BASE_BRANCH = 'main'
 
   def initialize(branch_name:, gem_name:)
+    @github_event = JSON.parse(ENV['GITHUB_EVENT'])
+
     @branch_name = branch_name
     @gem_name = gem_name
+
+    @dependent_repo_branch_name =
+      if is_merge_event?
+        @github_event['pull_request']['head']['ref']
+      else
+        @branch_name
+      end
 
     validate_arguments
   end
@@ -23,6 +34,13 @@ class GemDependencyUpdater
 
   private
 
+  def is_merge_event?
+    return false unless @github_event['action'] == 'closed'
+    return false unless @github_event['pull_request']
+
+    @github_event['pull_request']['merged'] == true
+  end
+
   def validate_arguments
     abort(USAGE_MESSAGE) if @branch_name.nil? || @branch_name.strip.empty? || @gem_name.nil? || @gem_name.strip.empty?
   end
@@ -30,12 +48,12 @@ class GemDependencyUpdater
   def checkout_branch
     execute_command("git fetch --depth=1 origin", "Failed to fetch from origin.")
     checkout_cmd = <<~CMD
-      git checkout #{@branch_name} 2>/dev/null \
-        || git checkout -b #{@branch_name} origin/#{@branch_name} 2>/dev/null \
-        || git checkout -b #{@branch_name}
+      git checkout #{@dependent_repo_branch_name} 2>/dev/null \
+        || git checkout -b #{@dependent_repo_branch_name} origin/#{@dependent_repo_branch_name} 2>/dev/null \
+        || git checkout -b #{@dependent_repo_branch_name}
     CMD
-    execute_command(checkout_cmd, "Failed to checkout or create branch '#{@branch_name}'.")
-    execute_command("git pull", "Failed to pull latest changes for branch '#{@branch_name}'.", graceful: true)
+    execute_command(checkout_cmd, "Failed to checkout or create branch '#{@dependent_repo_branch_name}'.")
+    execute_command("git pull", "Failed to pull latest changes for branch '#{@dependent_repo_branch_name}'.", graceful: true)
   end
 
   def update_gem_dependency
@@ -59,15 +77,15 @@ class GemDependencyUpdater
       return
     end
 
-    execute_command("git push origin #{@branch_name}")
+    execute_command("git push origin #{@dependent_repo_branch_name}")
   end
 
   def create_pull_request
     create_pr_command = [
       "gh pr create",
-      "--title \"Update #{@gem_name} to feature branch #{@branch_name}\"",
+      "--title \"Update #{@gem_name} to branch #{@branch_name}\"",
       "--body \"This PR updates the #{@gem_name} to the latest feature branch.\"",
-      "--head #{@branch_name}",
+      "--head #{@dependent_repo_branch_name}",
       "--base #{BASE_BRANCH}"
     ].join(' ')
 
