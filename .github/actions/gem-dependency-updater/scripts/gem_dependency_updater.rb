@@ -14,11 +14,6 @@ class GemDependencyUpdater
 
     @gem_name = gem_name
 
-    if @github_event['pull_request']['labels'].any? { |label| label['name'] == 'avoid gem dependency updater' }
-      puts "Skipping gem dependency update for branch '#{branch_name}' due to 'avoid gem dependency updater' label."
-      exit
-    end
-
     validate_arguments
   end
 
