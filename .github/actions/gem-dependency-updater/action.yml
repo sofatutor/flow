@@ -28,7 +28,7 @@ runs:
     - name: Run GemDependencyUpdater Ruby Script
       shell: bash
       run: |
-        ruby ${{ github.action_path }}/scripts/gem_dependency_updater.rb ${{ github.ref_name }} ${{ inputs.gem_name }}
+        ruby ${{ github.action_path }}/scripts/gem_dependency_updater.rb ${{ inputs.gem_name }}
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
         GITHUB_EVENT: ${{ toJson(github.event) }}
