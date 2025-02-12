@@ -82,9 +82,13 @@ class GemDependencyUpdater
   end
 
   def create_pull_request
+    pr_title = @github_event['pull_request']['base']['ref']
+    sc_number = pr_title[/\[SC-\d+\]/]
+    pr_title.gsub!(/\[SC-\d+\]/, '')
+
     create_pr_command = [
       "gh pr create",
-      "--title \"Update #{@gem_name} to branch #{branch_name}\"",
+      "--title \"#{sc_number} Update #{@gem_name}: #{pr_title.strip}\"",
       "--body \"This PR updates the #{@gem_name} to the latest feature branch.\"",
       "--head #{dependent_repo_branch_name}",
       "--base #{BASE_BRANCH}"
