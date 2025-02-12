@@ -82,7 +82,7 @@ class GemDependencyUpdater
   end
 
   def create_pull_request
-    pr_title = @github_event['pull_request']['base']['ref']
+    pr_title = @github_event['pull_request']['title']
     sc_number = pr_title[/\[SC-\d+\]/]
     pr_title.gsub!(/\[SC-\d+\]/, '')
 
