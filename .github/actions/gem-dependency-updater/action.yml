@@ -23,7 +23,6 @@ runs:
     - uses: sofatutor/setup-ruby@master
       with:
         ruby-version: '3.2'
-        bundler-cache: true
 
     - name: Run GemDependencyUpdater Ruby Script
       shell: bash

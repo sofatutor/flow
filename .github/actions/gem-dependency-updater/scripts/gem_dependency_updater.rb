@@ -64,7 +64,7 @@ class GemDependencyUpdater
       "#{$1}'#{branch_name}'"
     end
     File.write(GEMFILE_PATH, new_gemfile)
-    execute_command("bundle update #{@gem_name} --conservative", "Failed to update gem dependency.")
+    execute_command("bundle lock --update=#{@gem_name} --conservative", "Failed to update gem dependency.")
   end
 
   def commit_and_push_changes
