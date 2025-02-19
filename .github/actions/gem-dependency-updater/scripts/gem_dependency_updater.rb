@@ -102,31 +102,14 @@ class GemDependencyUpdater
       puts "Pull request already exists for branch '#{branch_name}'."
       return
     end
-
-    update_origin_pull_request
   end
 
   def pr_body
     <<~PR_BODY
-      This PR updates the #{@gem_name} to the latest feature branch.
+    [#{@github_event['pull_request']['repository']['name']} PR](#{@github_event['pull_request']['html_url']})
 
-      [#{@gem_name} PR](#{@github_event['pull_request']['html_url']})
+    This PR updates #{@github_event['pull_request']['repository']['name']} to the latest feature branch.
     PR_BODY
-  end
-
-  def update_origin_pull_request
-    pr_info_json = execute_command("gh pr view --json number,headRepository,url")
-    pr_info = JSON.parse(pr_info_json)
-
-    pr_link = "[#{pr_info['headRepository']['name']} ##{pr_info['number']}](#{pr_info['url']})"
-
-    current_body = @github_event['pull_request']['body']
-
-    return if current_body.include?(pr_link)
-
-    updated_pr_body = "#{current_body}\n\n#{pr_link}"
-
-    execute_command("gh pr edit #{@github_event['pull_request']['number']} --body \"#{updated_pr_body}\"")
   end
 
   def configure_git_user
