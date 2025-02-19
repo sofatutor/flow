@@ -110,7 +110,7 @@ class GemDependencyUpdater
     <<~PR_BODY
       This PR updates the #{@gem_name} to the latest feature branch.
 
-      [#{@gem_name} PR](#{@github_event['pull_request']['url']})
+      [#{@gem_name} PR](#{@github_event['pull_request']['html_url']})
     PR_BODY
   end
 
