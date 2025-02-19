@@ -106,9 +106,9 @@ class GemDependencyUpdater
 
   def pr_body
     <<~PR_BODY
-    [#{@github_event['pull_request']['repository']['name']} PR](#{@github_event['pull_request']['html_url']})
+    [#{@github_event['repository']['name']} PR](#{@github_event['pull_request']['html_url']})
 
-    This PR updates #{@github_event['pull_request']['repository']['name']} to the latest feature branch.
+    This PR updates #{@github_event['repository']['name']} to the latest feature branch.
     PR_BODY
   end
 
