@@ -89,7 +89,7 @@ class GemDependencyUpdater
     create_pr_command = [
       "gh pr create",
       "--title \"#{sc_number} Update #{@gem_name}: #{pr_title.strip}\"",
-      "--body \"This PR updates the #{@gem_name} to the latest feature branch.\"",
+      "--body \"#{pr_body}\"",
       "--head #{dependent_repo_branch_name}",
       "--base #{BASE_BRANCH}"
     ].join(' ')
@@ -102,6 +102,14 @@ class GemDependencyUpdater
       puts "Pull request already exists for branch '#{branch_name}'."
       return
     end
+  end
+
+  def pr_body
+    <<~PR_BODY
+    [#{@github_event['repository']['name']} PR](#{@github_event['pull_request']['html_url']})
+
+    This PR updates #{@github_event['repository']['name']} to the latest feature branch.
+    PR_BODY
   end
 
   def configure_git_user
