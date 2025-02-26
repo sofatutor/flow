@@ -47,7 +47,7 @@ class GemDependencyUpdater
   end
 
   def checkout_branch
-    execute_command("git fetch --depth=1 origin", "Failed to fetch from origin.")
+    execute_command("git fetch --depth=1 origin #{dependent_repo_branch_name}", "Failed to fetch from origin.", graceful: true)
     checkout_cmd = <<~CMD
       git checkout #{dependent_repo_branch_name} 2>/dev/null \
         || git checkout -b #{dependent_repo_branch_name} origin/#{dependent_repo_branch_name} 2>/dev/null \
