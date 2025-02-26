@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require 'benchmark'
 require 'json'
 
 class GemDependencyUpdater
@@ -119,7 +120,10 @@ class GemDependencyUpdater
 
   def execute_command(command, error_message = nil, graceful: false)
     puts "Executing: #{command}"
-    output = `#{command} 2>&1`
+    output = nil
+    time = Benchmark.measure do
+      output = `#{command} 2>&1`
+    end
 
     unless $?.success?
       error_message ||= "Command failed: #{command}"
@@ -131,6 +135,7 @@ class GemDependencyUpdater
       end
     end
 
+    puts "Execution time: #{time.real} seconds"
     output
   end
 end
