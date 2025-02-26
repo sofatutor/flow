@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 
+require 'benchmark'
 require 'json'
 
 class GemDependencyUpdater
@@ -47,14 +48,14 @@ class GemDependencyUpdater
   end
 
   def checkout_branch
-    execute_command("git fetch --depth=1 origin", "Failed to fetch from origin.")
+    execute_command("git fetch --depth=1 origin #{dependent_repo_branch_name}", "Failed to fetch from origin.", graceful: true)
     checkout_cmd = <<~CMD
       git checkout #{dependent_repo_branch_name} 2>/dev/null \
         || git checkout -b #{dependent_repo_branch_name} origin/#{dependent_repo_branch_name} 2>/dev/null \
         || git checkout -b #{dependent_repo_branch_name}
     CMD
     execute_command(checkout_cmd, "Failed to checkout or create branch '#{dependent_repo_branch_name}'.")
-    execute_command("git pull", "Failed to pull latest changes for branch '#{dependent_repo_branch_name}'.", graceful: true)
+    execute_command("git pull origin #{dependent_repo_branch_name}", "Failed to pull latest changes for branch '#{dependent_repo_branch_name}'.", graceful: true)
   end
 
   def update_gem_dependency
@@ -119,7 +120,10 @@ class GemDependencyUpdater
 
   def execute_command(command, error_message = nil, graceful: false)
     puts "Executing: #{command}"
-    output = `#{command} 2>&1`
+    output = nil
+    time = Benchmark.measure do
+      output = `#{command} 2>&1`
+    end
 
     unless $?.success?
       error_message ||= "Command failed: #{command}"
@@ -131,6 +135,7 @@ class GemDependencyUpdater
       end
     end
 
+    puts "Execution time: #{time.real} seconds"
     output
   end
 end
