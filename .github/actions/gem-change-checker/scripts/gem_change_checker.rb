@@ -75,4 +75,4 @@ class GemChangeChecker
   end
 end
 
-GemDependencyUpdater.new(gem_name: ARGV[0]).call
+GemChangeChecker.new(gem_name: ARGV[0]).call
