@@ -5,15 +5,13 @@ inputs:
     description: 'Name of the gem to check for changes'
     required: true
     type: string
-  main_branch:
-    description: 'The name of the main branch'
-    default: 'main'
-    required: false
-    type: string
 
 runs:
   using: 'composite'
   steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
     - uses: sofatutor/setup-ruby@master
       with:
         ruby-version: '3.2'
