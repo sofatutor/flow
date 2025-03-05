@@ -92,7 +92,8 @@ class GemDependencyUpdater
       "--title \"#{sc_number} Update #{@gem_name}: #{pr_title.strip}\"",
       "--body \"#{pr_body}\"",
       "--head #{dependent_repo_branch_name}",
-      "--base #{BASE_BRANCH}"
+      "--base #{BASE_BRANCH}",
+      '--draft'
     ].join(' ')
 
     puts "Creating pull request for branch '#{branch_name}'..."
