@@ -25,4 +25,5 @@ runs:
       run: |
         ruby ${{ github.action_path }}/scripts/gem_change_checker.rb ${{ inputs.gem_name }}
       env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_EVENT: ${{ toJson(github.event) }}
