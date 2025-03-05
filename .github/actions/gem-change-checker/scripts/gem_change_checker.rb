@@ -15,7 +15,7 @@ class GemChangeChecker
   end
 
   def call
-    if current_body.contains?("[#{@gem_name} PR](")
+    if current_body.include?("[#{@gem_name} PR](")
       puts "PR already contains a link to the #{@gem_name} changes."
       return
     end
