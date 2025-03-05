@@ -5,9 +5,6 @@ inputs:
     description: 'Name of the gem to check for changes'
     required: true
     type: string
-  token:
-    description: 'GitHub Token'
-    required: true
 
 runs:
   using: 'composite'
@@ -28,5 +25,5 @@ runs:
       run: |
         ruby ${{ github.action_path }}/scripts/gem_change_checker.rb ${{ inputs.gem_name }}
       env:
-        GITHUB_TOKEN: ${{ inputs.token }}
+        GITHUB_TOKEN: ${{ github.token }}
         GITHUB_EVENT: ${{ toJson(github.event) }}
