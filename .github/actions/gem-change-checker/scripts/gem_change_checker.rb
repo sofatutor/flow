@@ -26,8 +26,8 @@ class GemChangeChecker
     end
 
     updated_body = case current_body
-                   when /#{link_marker}/
-                     current_body.gsub(/#{link_marker}\(.*\)/, new_link)
+                   when /^#{link_marker}/
+                     current_body.gsub(/^#{link_marker}\(.*\)$/, new_link)
                    else
                      "#{new_link}\n\n#{current_body}"
                    end
