@@ -47,10 +47,12 @@ class GemChangeChecker
 
   def old_revision
     @old_revision ||= `git show origin/#{BASE_BRANCH}:Gemfile.lock | grep -A 1 "#{@gem_name}" | grep revision | awk '{print $2}'`
+    @old_revision.strip
   end
 
   def new_revision
     @new_revision ||= `grep -A 1 "#{@gem_name}" Gemfile.lock | grep revision | awk '{print $2}'`
+    @new_revision.strip
   end
 
   def compare_url
