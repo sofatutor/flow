@@ -5,9 +5,6 @@ inputs:
     description: 'Name of the gem to check for changes'
     required: true
     type: string
-defaults:
-  run:
-    shell: bash
 
 runs:
   using: 'composite'
@@ -16,6 +13,7 @@ runs:
       uses: actions/checkout@v4
 
     - name: Fetch main branch
+      shell: bash
       run: git fetch --depth=1 origin main
 
     - uses: sofatutor/setup-ruby@master
@@ -23,6 +21,7 @@ runs:
         ruby-version: '3.2'
 
     - name: Run GemDependencyUpdater Ruby Script
+      shell: bash
       run: |
         ruby ${{ github.action_path }}/scripts/gem_change_checker.rb ${{ inputs.gem_name }}
       env:
