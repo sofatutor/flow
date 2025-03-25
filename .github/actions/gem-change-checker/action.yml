@@ -1,0 +1,27 @@
+name: 'Gem Change Checker'
+description: 'Links to the diff if a gem revision changed in a PR'
+inputs:
+  gem_name:
+    description: 'Name of the gem to check for changes'
+    required: true
+    type: string
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Fetch main branch
+      shell: bash
+      run: git fetch --depth=1 origin main
+
+    - uses: sofatutor/setup-ruby@master
+
+    - name: Run GemDependencyUpdater Ruby Script
+      shell: bash
+      run: |
+        ruby ${{ github.action_path }}/scripts/gem_change_checker.rb ${{ inputs.gem_name }}
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        GITHUB_EVENT: ${{ toJson(github.event) }}
