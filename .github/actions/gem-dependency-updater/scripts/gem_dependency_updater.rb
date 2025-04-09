@@ -9,6 +9,14 @@ class GemDependencyUpdater
   GIT_USER_EMAIL = 'operations+github-bot@sofatutor.com'
   GEMFILE_PATH = 'Gemfile'
   BASE_BRANCH = 'main'
+  TEAMS_TO_MILESTONES = {
+    'Blue' => "Team Blue 🔷",
+    'Green' => "Team Green ☘️",
+    'Orange' => "Team Orange 🔶",
+    'Purple' => "Team Purple 🌸",
+    'Yellow' => "Team Yellow ☀️",
+    'Black' => nil
+  }
 
   def initialize(gem_name:)
     @github_event = JSON.parse(ENV['GITHUB_EVENT'])
@@ -93,6 +101,8 @@ class GemDependencyUpdater
       "--body \"#{pr_body}\"",
       "--head #{dependent_repo_branch_name}",
       "--base #{BASE_BRANCH}",
+      milestone_option,
+      assignee_option,
       '--draft'
     ].join(' ')
 
@@ -112,6 +122,31 @@ class GemDependencyUpdater
 
     This PR updates #{@github_event['repository']['name']} to the latest feature branch.
     PR_BODY
+  end
+
+  def milestone_option
+    return nil unless author
+    return nil unless File.exist?('doc/team.yml')
+
+    teams = YAML.load_file('doc/team.yml')
+    team = teams.dig(author, :team)
+
+    milestone = TEAMS_TO_MILESTONES[team]
+
+     "--milestone '#{milestone}'" if milestone
+  end
+
+  def assignee_option
+    return nil unless author
+
+    "--assignee '#{@github_event['pull_request']['assignee']['login']}'",
+  end
+
+  def author
+    return nil unless @github_event['pull_request']
+    return nil unless @github_event['pull_request']['assignee']
+
+    @github_event['pull_request']['assignee']['login']
   end
 
   def configure_git_user
