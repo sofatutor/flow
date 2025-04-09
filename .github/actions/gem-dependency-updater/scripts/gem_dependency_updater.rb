@@ -2,6 +2,7 @@
 
 require 'benchmark'
 require 'json'
+require 'yaml'
 
 class GemDependencyUpdater
   USAGE_MESSAGE = "Usage: #{$0} <gem_name>"
