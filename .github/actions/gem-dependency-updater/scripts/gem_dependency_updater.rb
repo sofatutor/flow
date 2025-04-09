@@ -139,7 +139,7 @@ class GemDependencyUpdater
   def assignee_option
     return nil unless author
 
-    "--assignee '#{@github_event['pull_request']['assignee']['login']}'",
+    "--assignee '#{author}'"
   end
 
   def author
