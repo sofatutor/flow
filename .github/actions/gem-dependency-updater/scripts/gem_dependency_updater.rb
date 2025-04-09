@@ -126,15 +126,11 @@ class GemDependencyUpdater
   end
 
   def milestone_option
-    return nil unless author
-    return nil unless File.exist?('doc/team.yml')
+    return nil unless team_of_author
 
-    teams = YAML.load_file('doc/team.yml')
-    team = teams.dig(author, :team)
+    milestone = TEAMS_TO_MILESTONES[team_of_author]
 
-    milestone = TEAMS_TO_MILESTONES[team]
-
-     "--milestone '#{milestone}'" if milestone
+     "--milestone '#{milestone_by_author}'" if milestone
   end
 
   def assignee_option
@@ -148,6 +144,18 @@ class GemDependencyUpdater
     return nil unless @github_event['pull_request']['assignee']
 
     @github_event['pull_request']['assignee']['login']
+  end
+
+  def team_of_author
+    return nil unless author
+    return nil unless File.exist?('doc/team.yml')
+
+    team_data = YAML.load_file('doc/team.yml')
+    _username, details = team_data.find { |_, details| details['github'] == author }
+
+    return nil unless details
+
+    details['team']
   end
 
   def configure_git_user
