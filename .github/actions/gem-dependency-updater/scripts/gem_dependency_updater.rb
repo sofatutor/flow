@@ -130,7 +130,7 @@ class GemDependencyUpdater
 
     milestone = TEAMS_TO_MILESTONES[team_of_author]
 
-     "--milestone '#{milestone_by_author}'" if milestone
+     "--milestone '#{milestone}'" if milestone
   end
 
   def assignee_option
