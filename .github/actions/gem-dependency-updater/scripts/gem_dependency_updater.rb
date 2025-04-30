@@ -74,8 +74,8 @@ class GemDependencyUpdater
 
   def add_changelog
     return unless @add_changelog
-    return unless Dir.glob('!undeployed-changes/*').empty?
     return unless File.exist?('bin/changelog')
+    return unless execute_command("git diff main -- \!undeployed-changes").empty?
 
     execute_command("bin/changelog change Update #{@gem_name}: #{pr_title}", "Failed to add changelog.", graceful: true)
     execute_command("git push origin #{dependent_repo_branch_name}")
