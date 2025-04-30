@@ -10,11 +10,13 @@ class GemDependencyUpdater
   GEMFILE_PATH = 'Gemfile'
   BASE_BRANCH = 'main'
 
-  def initialize(gem_name:, add_changelog: false)
+  def initialize(gem_name:, add_changelog: 'false')
     @github_event = JSON.parse(ENV['GITHUB_EVENT'])
 
     @gem_name = gem_name
-    @add_changelog = add_changelog
+    @add_changelog = !add_changelog.nil? && add_changelog != 'false'
+
+    puts "Adding changelog: #{@add_changelog}"
 
     validate_arguments
   end
