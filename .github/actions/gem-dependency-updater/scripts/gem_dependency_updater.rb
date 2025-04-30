@@ -114,7 +114,7 @@ class GemDependencyUpdater
   end
 
   def pr_title
-    @github_event['pull_request']['title'].gsub(/\[SC-\d+\]/, '').strip.dump
+    @github_event['pull_request']['title'].gsub(/\[SC-\d+\]/, '').strip.gsub('"', '\"')
   end
 
   def sc_number
