@@ -156,4 +156,4 @@ class GemDependencyUpdater
   end
 end
 
-GemDependencyUpdater.new(gem_name: ARGV[0, add_changelog: ARGV[1]).call
+GemDependencyUpdater.new(gem_name: ARGV[0], add_changelog: ARGV[1]).call
