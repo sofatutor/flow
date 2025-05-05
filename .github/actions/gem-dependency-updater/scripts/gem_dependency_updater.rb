@@ -19,10 +19,13 @@ class GemDependencyUpdater
     'Black' => nil
   }
 
-  def initialize(gem_name:)
+  def initialize(gem_name:, add_changelog: 'false')
     @github_event = JSON.parse(ENV['GITHUB_EVENT'])
 
     @gem_name = gem_name
+    @add_changelog = !add_changelog.nil? && add_changelog != 'false'
+
+    puts "Adding changelog: #{@add_changelog}"
 
     validate_arguments
   end
@@ -32,6 +35,7 @@ class GemDependencyUpdater
     update_gem_dependency
     commit_and_push_changes
     create_pull_request
+    add_changelog
   end
 
   private
@@ -77,6 +81,15 @@ class GemDependencyUpdater
     execute_command("bundle lock --update=#{@gem_name} --conservative", "Failed to update gem dependency.")
   end
 
+  def add_changelog
+    return unless @add_changelog
+    return unless File.exist?('bin/changelog')
+    return unless execute_command("git diff main -- \!undeployed-changes").empty?
+
+    execute_command("bin/changelog change Update #{@gem_name}: #{pr_title}", "Failed to add changelog.", graceful: true)
+    execute_command("git push origin #{dependent_repo_branch_name}")
+  end
+
   def commit_and_push_changes
     configure_git_user
     execute_command('git add Gemfile Gemfile.lock')
@@ -92,13 +105,9 @@ class GemDependencyUpdater
   end
 
   def create_pull_request
-    pr_title = @github_event['pull_request']['title']
-    sc_number = pr_title[/\[SC-\d+\]/]
-    pr_title.gsub!(/\[SC-\d+\]/, '')
-
     create_pr_command = [
       "gh pr create",
-      "--title \"#{sc_number} Update #{@gem_name}: #{pr_title.strip}\"",
+      "--title \"#{sc_number} Update #{@gem_name}: #{pr_title}\"",
       "--body \"#{pr_body}\"",
       "--head #{dependent_repo_branch_name}",
       "--base #{BASE_BRANCH}",
@@ -115,6 +124,14 @@ class GemDependencyUpdater
       puts "Pull request already exists for branch '#{branch_name}'."
       return
     end
+  end
+
+  def pr_title
+    @github_event['pull_request']['title'].gsub(/\[SC-\d+\]/, '').strip.gsub('"', '\"')
+  end
+
+  def sc_number
+    @github_event['pull_request']['title'][/\[SC-\d+\]/]
   end
 
   def pr_body
@@ -185,4 +202,4 @@ class GemDependencyUpdater
   end
 end
 
-GemDependencyUpdater.new(gem_name: ARGV[0]).call
+GemDependencyUpdater.new(gem_name: ARGV[0], add_changelog: ARGV[1]).call
