@@ -20,7 +20,7 @@ runs:
         repository: ${{ inputs.repo }}
         token: ${{ inputs.token }}
 
-    - uses: sofatutor/setup-ruby@master
+    - uses: ruby/setup-ruby@v1.235.0
       with:
         ruby-version: '3.2'
         bundler-cache: true
