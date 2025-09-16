@@ -16,7 +16,7 @@ runs:
       shell: bash
       run: git fetch --depth=1 origin main
 
-    - uses: sofatutor/setup-ruby@v1.238.0
+    - uses: sofatutor/setup-ruby@latest
 
     - name: Run GemDependencyUpdater Ruby Script
       shell: bash
