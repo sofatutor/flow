@@ -24,7 +24,7 @@ runs:
         repository: ${{ inputs.repo }}
         token: ${{ inputs.token }}
 
-    - uses: sofatutor/setup-ruby@master
+    - uses: ruby/setup-ruby@master
       with:
         bundler-cache: false
 
