@@ -186,15 +186,19 @@ class GemDependencyUpdater
   end
 
   def create_branch(repo, head)
-    stdout, status = Open3.capture2('git', 'ls-remote', '--heads', 'origin', dependent_repo_branch_name)
+    stdout, status = Open3.capture2('git', 'ls-remote', 'origin', branch_ref)
     abort('Failed to look up the remote branch.') unless status.success?
-    return unless stdout.strip.empty?
+    return if stdout.each_line.any? { |line| line.split.last == branch_ref }
 
     system(
       'gh', 'api', '--method', 'POST', "repos/#{repo}/git/refs",
-      '-f', "ref=refs/heads/#{dependent_repo_branch_name}",
+      '-f', "ref=#{branch_ref}",
       '-f', "sha=#{head}"
     ) || abort('Failed to create the remote branch.')
+  end
+
+  def branch_ref
+    "refs/heads/#{dependent_repo_branch_name}"
   end
 
   def signed_commit(repo, head, additions)
@@ -211,7 +215,11 @@ class GemDependencyUpdater
     }
     stdout, status = Open3.capture2('gh', 'api', 'graphql', '--input', '-', stdin_data: payload.to_json)
     puts stdout
-    abort('Failed to commit changes.') unless status.success?
+    oid = status.success? ? JSON.parse(stdout).dig('data', 'createCommitOnBranch', 'commit', 'oid') : nil
+    abort('Failed to commit changes.') unless oid
+
+    system('git', 'fetch', 'origin', dependent_repo_branch_name) || abort('Failed to fetch the signed commit.')
+    system('git', 'reset', '--hard', 'FETCH_HEAD') || abort('Failed to update the local branch.')
   end
 
   def execute_command(command, error_message = nil, graceful: false)
