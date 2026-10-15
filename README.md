@@ -1,5 +1,7 @@
 # flow
 
+flow is a repository of GitHub Actions. sofatutor-bot is the GitHub account those actions commit as.
+
 GitHub actions that keep the sofatutor apps aligned with bass, cobain, and SPASS.
 
 A ready-for-review pull request in one of those gems opens a draft pull request in sofatutor and sofatutor-kids. It points the gem's `branch:` in the Gemfile at the gem branch and updates `Gemfile.lock`. Merging the gem pull request points the gem back at `main`.
