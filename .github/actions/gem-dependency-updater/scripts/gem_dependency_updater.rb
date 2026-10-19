@@ -179,10 +179,18 @@ class GemDependencyUpdater
   def gemfile_additions
     %w[Gemfile Gemfile.lock].filter_map do |path|
       next unless File.file?(path)
-      next if system('git', 'diff', '--quiet', 'HEAD', '--', path)
+      next if unchanged?(path)
 
       { path: path, contents: Base64.strict_encode64(File.binread(path)) }
     end
+  end
+
+  def unchanged?(path)
+    tracked?(path) && system('git', 'diff', '--quiet', 'HEAD', '--', path)
+  end
+
+  def tracked?(path)
+    system('git', 'ls-files', '--error-unmatch', '--', path, out: File::NULL, err: File::NULL)
   end
 
   def create_branch(repo, head)
