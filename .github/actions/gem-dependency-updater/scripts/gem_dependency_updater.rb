@@ -1,13 +1,13 @@
 #!/usr/bin/env ruby
 
+require 'base64'
 require 'benchmark'
 require 'json'
+require 'open3'
 require 'yaml'
 
 class GemDependencyUpdater
   USAGE_MESSAGE = "Usage: #{$0} <gem_name>"
-  GIT_USER_NAME = 'sofatutor-bot'
-  GIT_USER_EMAIL = 'operations+github-bot@sofatutor.com'
   GEMFILE_PATH = 'Gemfile'
   BASE_BRANCH = 'main'
   TEAMS_TO_MILESTONES = {
@@ -19,14 +19,9 @@ class GemDependencyUpdater
     'Black' => nil
   }
 
-  def initialize(gem_name:, add_changelog: 'false')
+  def initialize(gem_name:)
     @github_event = JSON.parse(ENV['GITHUB_EVENT'])
-
     @gem_name = gem_name
-    @add_changelog = !add_changelog.nil? && add_changelog != 'false'
-
-    puts "Adding changelog: #{@add_changelog}"
-
     validate_arguments
   end
 
@@ -35,7 +30,6 @@ class GemDependencyUpdater
     update_gem_dependency
     commit_and_push_changes
     create_pull_request
-    add_changelog
   end
 
   private
@@ -81,27 +75,19 @@ class GemDependencyUpdater
     execute_command("bundle lock --update=#{@gem_name} --conservative", "Failed to update gem dependency.")
   end
 
-  def add_changelog
-    return unless @add_changelog
-    return unless File.exist?('bin/changelog')
-    return unless execute_command("git diff main -- \!undeployed-changes").empty?
-
-    execute_command("bin/changelog change Update #{@gem_name}: #{pr_title}", "Failed to add changelog.", graceful: true)
-    execute_command("git push origin #{dependent_repo_branch_name}")
-  end
-
   def commit_and_push_changes
-    configure_git_user
-    execute_command('git add Gemfile Gemfile.lock')
-    commit_message = "Update #{@gem_name} to feature branch #{branch_name}"
-    output = execute_command("git commit -m \"#{commit_message}\"", "Failed to commit changes.", graceful: true)
-
-    if output.include?('nothing to commit, working tree clean')
-      puts "Nothing to commit, working tree clean."
+    additions = gemfile_additions
+    if additions.empty?
+      puts 'Nothing to commit, working tree clean.'
       return
     end
 
-    execute_command("git push origin #{dependent_repo_branch_name}")
+    repo = `gh repo view --json nameWithOwner -q .nameWithOwner`.strip
+    abort('Could not determine the repository.') unless $?.success? && repo.include?('/')
+
+    head = `git rev-parse HEAD`.strip
+    create_branch(repo, head)
+    signed_commit(repo, head, additions)
   end
 
   def create_pull_request
@@ -175,9 +161,58 @@ class GemDependencyUpdater
     details['team']
   end
 
-  def configure_git_user
-    execute_command("git config user.name \"#{GIT_USER_NAME}\"")
-    execute_command("git config user.email \"#{GIT_USER_EMAIL}\"")
+  def gemfile_additions
+    %w[Gemfile Gemfile.lock].filter_map do |path|
+      next unless File.file?(path)
+      next if unchanged?(path)
+
+      { path: path, contents: Base64.strict_encode64(File.binread(path)) }
+    end
+  end
+
+  def unchanged?(path)
+    tracked?(path) && system('git', 'diff', '--quiet', 'HEAD', '--', path)
+  end
+
+  def tracked?(path)
+    system('git', 'ls-files', '--error-unmatch', '--', path, out: File::NULL, err: File::NULL)
+  end
+
+  def create_branch(repo, head)
+    stdout, status = Open3.capture2('git', 'ls-remote', 'origin', branch_ref)
+    abort('Failed to look up the remote branch.') unless status.success?
+    return if stdout.each_line.any? { |line| line.split.last == branch_ref }
+
+    system(
+      'gh', 'api', '--method', 'POST', "repos/#{repo}/git/refs",
+      '-f', "ref=#{branch_ref}",
+      '-f', "sha=#{head}"
+    ) || abort('Failed to create the remote branch.')
+  end
+
+  def branch_ref
+    "refs/heads/#{dependent_repo_branch_name}"
+  end
+
+  def signed_commit(repo, head, additions)
+    payload = {
+      query: 'mutation($input: CreateCommitOnBranchInput!) { createCommitOnBranch(input: $input) { commit { oid } } }',
+      variables: {
+        input: {
+          branch: { repositoryNameWithOwner: repo, branchName: dependent_repo_branch_name },
+          message: { headline: "Update #{@gem_name} to feature branch #{branch_name}" },
+          fileChanges: { additions: additions },
+          expectedHeadOid: head
+        }
+      }
+    }
+    stdout, status = Open3.capture2('gh', 'api', 'graphql', '--input', '-', stdin_data: payload.to_json)
+    puts stdout
+    oid = status.success? ? JSON.parse(stdout).dig('data', 'createCommitOnBranch', 'commit', 'oid') : nil
+    abort('Failed to commit changes.') unless oid
+
+    system('git', 'fetch', 'origin', dependent_repo_branch_name) || abort('Failed to fetch the signed commit.')
+    system('git', 'reset', '--hard', 'FETCH_HEAD') || abort('Failed to update the local branch.')
   end
 
   def execute_command(command, error_message = nil, graceful: false)
@@ -202,4 +237,4 @@ class GemDependencyUpdater
   end
 end
 
-GemDependencyUpdater.new(gem_name: ARGV[0], add_changelog: ARGV[1]).call
+GemDependencyUpdater.new(gem_name: ARGV[0]).call
