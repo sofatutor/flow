@@ -19,14 +19,9 @@ class GemDependencyUpdater
     'Black' => nil
   }
 
-  def initialize(gem_name:, add_changelog: 'false')
+  def initialize(gem_name:)
     @github_event = JSON.parse(ENV['GITHUB_EVENT'])
-
     @gem_name = gem_name
-    @add_changelog = !add_changelog.nil? && add_changelog != 'false'
-
-    puts "Adding changelog: #{@add_changelog}"
-
     validate_arguments
   end
 
@@ -35,7 +30,6 @@ class GemDependencyUpdater
     update_gem_dependency
     commit_and_push_changes
     create_pull_request
-    add_changelog
   end
 
   private
@@ -79,15 +73,6 @@ class GemDependencyUpdater
     end
     File.write(GEMFILE_PATH, new_gemfile)
     execute_command("bundle lock --update=#{@gem_name} --conservative", "Failed to update gem dependency.")
-  end
-
-  def add_changelog
-    return unless @add_changelog
-    return unless File.exist?('bin/changelog')
-    return unless execute_command("git diff main -- \!undeployed-changes").empty?
-
-    execute_command("bin/changelog change Update #{@gem_name}: #{pr_title}", "Failed to add changelog.", graceful: true)
-    execute_command("git push origin #{dependent_repo_branch_name}")
   end
 
   def commit_and_push_changes
@@ -252,4 +237,4 @@ class GemDependencyUpdater
   end
 end
 
-GemDependencyUpdater.new(gem_name: ARGV[0], add_changelog: ARGV[1]).call
+GemDependencyUpdater.new(gem_name: ARGV[0]).call

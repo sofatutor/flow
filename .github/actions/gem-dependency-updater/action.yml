@@ -10,10 +10,6 @@ inputs:
   token:
     description: 'GitHub Personal Access Token'
     required: true
-  add_changelog:
-    description: 'Add a changelog entry'
-    required: false
-    default: 'false'
 
 runs:
   using: 'composite'
@@ -31,7 +27,7 @@ runs:
     - name: Run GemDependencyUpdater Ruby Script
       shell: bash
       run: |
-        ruby ${{ github.action_path }}/scripts/gem_dependency_updater.rb ${{ inputs.gem_name }} ${{ inputs.add_changelog }}
+        ruby ${{ github.action_path }}/scripts/gem_dependency_updater.rb ${{ inputs.gem_name }}
       env:
         GITHUB_TOKEN: ${{ inputs.token }}
         GITHUB_EVENT: ${{ toJson(github.event) }}
