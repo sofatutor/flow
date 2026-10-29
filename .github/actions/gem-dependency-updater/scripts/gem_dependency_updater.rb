@@ -9,6 +9,7 @@ require 'yaml'
 class GemDependencyUpdater
   USAGE_MESSAGE = "Usage: #{$0} <gem_name>"
   GEMFILE_PATH = 'Gemfile'
+  LOCKFILE_PATH = 'Gemfile.lock'
   BASE_BRANCH = 'main'
   TEAMS_TO_MILESTONES = {
     'Blue' => "Team Blue 🔷",
@@ -66,13 +67,72 @@ class GemDependencyUpdater
   end
 
   def update_gem_dependency
-    execute_command("bundle config set --local frozen false", "Failed to set bundle config.")
     gemfile = File.read(GEMFILE_PATH)
-    new_gemfile = gemfile.gsub(/(gem '#{Regexp.escape(@gem_name)}',.*branch: )'[^']*'/) do
+    declaration = /(gem '#{Regexp.escape(@gem_name)}',.*branch: )'[^']*'/
+    new_gemfile = gemfile.gsub(declaration) do
       "#{$1}'#{branch_name}'"
     end
     File.write(GEMFILE_PATH, new_gemfile)
+    # Without a matching declaration the Gemfile keeps its branch, so the lockfile must not move on its own.
+    return if gemfile.match?(declaration) && update_locked_revision
+
+    execute_command("bundle config set --local frozen false", "Failed to set bundle config.")
     execute_command("bundle lock --update=#{@gem_name} --conservative", "Failed to update gem dependency.")
+  end
+
+  # bundle lock re-fetches every git source and the gem index, which takes about a minute.
+  # While the gem's gemspec and version are unchanged, its locked specs stay the same,
+  # so pointing its GIT block at the new revision is enough.
+  def update_locked_revision
+    return false unless File.file?(LOCKFILE_PATH)
+
+    lockfile = File.read(LOCKFILE_PATH)
+    block = lockfile.split(/^(?=\S)/).find do |section|
+      section.start_with?('GIT') && section.match?(/^    #{Regexp.escape(@gem_name)} \(/)
+    end
+    return false unless block && block.match?(/^  branch: /)
+    # A ref or tag pins the revision, so the branch head is not what the Gemfile asks for.
+    return false if block.match?(/^  (ref|tag): /)
+
+    remote = block[/^  remote: (\S+)$/, 1]
+    repo = remote && remote[%r{\Ahttps://github\.com/([^/]+/[^/]+?)(?:\.git)?\z}, 1]
+    old_revision = block[/^  revision: (\h+)$/, 1]
+    new_revision = repo && old_revision && branch_head(remote)
+    return false unless new_revision
+    return false unless new_revision == old_revision || specs_unchanged?(repo, old_revision, new_revision)
+
+    new_block = block
+      .sub(/^  revision: \h+$/, "  revision: #{new_revision}")
+      .sub(/^  branch: .*$/, "  branch: #{branch_name}")
+    File.write(LOCKFILE_PATH, lockfile.sub(block) { new_block })
+    puts "Pointed #{@gem_name} at #{new_revision} without re-resolving the bundle."
+    true
+  end
+
+  def branch_head(remote)
+    ref = "refs/heads/#{branch_name}"
+    stdout, status = Open3.capture2('git', 'ls-remote', remote, ref)
+    return nil unless status.success?
+
+    line = stdout.each_line.find { |l| l.split.last == ref }
+    line&.split&.first
+  end
+
+  # A compare only lists changes since the merge base, so comparing both ways
+  # covers every file that differs between the two revisions, even after a squash merge.
+  def specs_unchanged?(repo, old_revision, new_revision)
+    [[old_revision, new_revision], [new_revision, old_revision]].all? do |base, head|
+      stdout, status = Open3.capture2('gh', 'api', "repos/#{repo}/compare/#{base}...#{head}")
+      next false unless status.success?
+
+      files = JSON.parse(stdout)['files']
+      # The compare API lists at most 300 files.
+      next false unless files && files.size < 300
+
+      files.flat_map { |file| [file['filename'], file['previous_filename']] }.compact.none? do |path|
+        File.extname(path) == '.gemspec' || %w[version.rb VERSION].include?(File.basename(path))
+      end
+    end
   end
 
   def commit_and_push_changes
