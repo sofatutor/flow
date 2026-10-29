@@ -68,11 +68,13 @@ class GemDependencyUpdater
 
   def update_gem_dependency
     gemfile = File.read(GEMFILE_PATH)
-    new_gemfile = gemfile.gsub(/(gem '#{Regexp.escape(@gem_name)}',.*branch: )'[^']*'/) do
+    declaration = /(gem '#{Regexp.escape(@gem_name)}',.*branch: )'[^']*'/
+    new_gemfile = gemfile.gsub(declaration) do
       "#{$1}'#{branch_name}'"
     end
     File.write(GEMFILE_PATH, new_gemfile)
-    return if update_locked_revision
+    # Without a matching declaration the Gemfile keeps its branch, so the lockfile must not move on its own.
+    return if gemfile.match?(declaration) && update_locked_revision
 
     execute_command("bundle config set --local frozen false", "Failed to set bundle config.")
     execute_command("bundle lock --update=#{@gem_name} --conservative", "Failed to update gem dependency.")
@@ -82,11 +84,15 @@ class GemDependencyUpdater
   # While the gem's gemspec and version are unchanged, its locked specs stay the same,
   # so pointing its GIT block at the new revision is enough.
   def update_locked_revision
+    return false unless File.file?(LOCKFILE_PATH)
+
     lockfile = File.read(LOCKFILE_PATH)
     block = lockfile.split(/^(?=\S)/).find do |section|
       section.start_with?('GIT') && section.match?(/^    #{Regexp.escape(@gem_name)} \(/)
     end
     return false unless block && block.match?(/^  branch: /)
+    # A ref or tag pins the revision, so the branch head is not what the Gemfile asks for.
+    return false if block.match?(/^  (ref|tag): /)
 
     remote = block[/^  remote: (\S+)$/, 1]
     repo = remote && remote[%r{\Ahttps://github\.com/([^/]+/[^/]+?)(?:\.git)?\z}, 1]
